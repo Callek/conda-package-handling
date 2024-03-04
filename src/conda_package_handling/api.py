@@ -84,7 +84,7 @@ def extract(fn, dest_dir=None, components=None, prefix=None):
         )
 
 
-def create(prefix, file_list, out_fn, out_folder=None, **kw):
+def create(prefix, file_list, out_fn, out_folder=None, force=False, **kw):
     if not out_folder:
         out_folder = _os.getcwd()
 
@@ -106,6 +106,8 @@ def create(prefix, file_list, out_fn, out_folder=None, **kw):
     out = None
     for format in SUPPORTED_EXTENSIONS.values():
         if format.supported(out_fn):
+            if force and _os.path.lexists(out_fn):
+                _os.unlink(out_fn)
             try:
                 out = format.create(prefix, file_list, out_fn, out_folder, **kw)
                 break

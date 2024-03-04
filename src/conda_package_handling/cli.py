@@ -64,6 +64,9 @@ def build_parser():
         " line that should be included in the archive.  If not provided, "
         "lists all files in the prefix.",
     )
+    create_parser.add_argument(
+        "--force", action="store_true", help="Force overwrite existing package"
+    )
     create_parser.add_argument("--out-folder", help="Folder to dump final archive to")
 
     convert_parser = sp.add_parser(
@@ -120,7 +123,7 @@ def main(args=None):
         else:
             api.extract(args.archive_path, args.dest, prefix=args.prefix)
     elif args.subcommand in ("create", "c"):
-        api.create(args.prefix, args.file_list, args.out_fn, args.out_folder)
+        api.create(args.prefix, args.file_list, args.out_fn, args.out_folder, force=args.force)
     elif args.subcommand in ("transmute", "t"):
         failed_files = api.transmute(
             args.in_file,
