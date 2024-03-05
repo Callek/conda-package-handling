@@ -5,6 +5,7 @@ Test format classes.
 """
 
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -35,16 +36,30 @@ def test_extract_create(tmpdir):
             assert os.listdir(info_path) == ["info"]
 
         filelist = [str(p.relative_to(both_path)) for p in both_path.rglob("*")]
-        format.create(
-            both_path,
-            filelist,
-            tmpdir / outfile,
-            # compression_tuple is for libarchive compatibility. Instead, pass
-            # compressor=(compressor factory function)
-            compression_tuple=(".tar.zst", "zstd", "zstd:compression-level=1"),
-        )
+
+        def _do_create(_force=False):
+            """Closure to easily rerun"""
+            format.create(
+                both_path,
+                filelist,
+                tmpdir / outfile,
+                # compression_tuple is for libarchive compatibility. Instead, pass
+                # compressor=(compressor factory function)
+                compression_tuple=(".tar.zst", "zstd", "zstd:compression-level=1"),
+                force=_force,
+            )
+
+        _do_create()
 
         assert (tmpdir / outfile).exists()
+
+        # test that no-force keeps file, and force overwrites file
+        for force in False, True:
+            mtime = Path(tmpdir / outfile).stat().st_mtime
+            time.sleep(2)
+            _do_create(_force=force)
+            mtime2 = Path(tmpdir / outfile).stat().st_mtime
+            assert (mtime2 == mtime) != force
 
         with pytest.raises(ValueError):
             CondaFormat_v2.create(

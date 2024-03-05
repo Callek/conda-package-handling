@@ -55,12 +55,15 @@ class CondaFormat_v2(AbstractBaseFormat):
         file_list,
         out_fn,
         out_folder=os.getcwd(),
+        force=False,
         compressor: Callable[[], zstandard.ZstdCompressor] | None = None,
         compression_tuple=(None, None, None),
     ):
         if os.path.isabs(out_fn):
             out_folder = os.path.dirname(out_fn)
             out_fn = os.path.basename(out_fn)
+        if force and os.path.lexists(out_fn):
+            os.unlink(out_fn)
         conda_pkg_fn = os.path.join(out_folder, out_fn)
         file_id = out_fn.replace(".conda", "")
         pkg_files = utils.filter_info_files(file_list, prefix)
